@@ -19,6 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { createAccount } from "@/lib/actions/user.actions";
 
+import { OtpModal } from "./otp-modal";
+
 type FormType = "sign-in" | "sign-up";
 
 const authFormSchema = (formType: FormType) => {
@@ -145,7 +147,9 @@ export const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
-      {/* OTP Verification */}
+      {accountId && (
+        <OtpModal email={form.getValues("email")} accountId={accountId} />
+      )}
     </>
   );
 };
