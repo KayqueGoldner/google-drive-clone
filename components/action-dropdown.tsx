@@ -26,15 +26,23 @@ import { ActionType } from "@/types";
 import { constructDownloadUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { renameFile } from "@/lib/actions/file.actions";
-import { FileDetails } from "@/components/actions-modal-content";
+import { renameFile, updateFileUsers } from "@/lib/actions/file.actions";
+import { FileDetails, ShareInput } from "@/components/actions-modal-content";
 
-export const ActionDropdown = ({ file }: { file: Models.Document }) => {
+export const ActionDropdown = ({
+  file,
+  currentUser,
+}: {
+  file: Models.Document;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentUser: any;
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
+  const [emails, setEmails] = useState<string[]>([]);
   const pathname = usePathname();
 
   const handleModal = (actionItem: ActionType) => {
@@ -67,7 +75,12 @@ export const ActionDropdown = ({ file }: { file: Models.Document }) => {
           extension: file.extension,
           path: pathname,
         }),
-      share: () => console.log("share"),
+      share: () =>
+        updateFileUsers({
+          fileId: file.$id,
+          emails,
+          path: pathname,
+        }),
       delete: () => console.log("delete"),
     };
 
@@ -78,10 +91,25 @@ export const ActionDropdown = ({ file }: { file: Models.Document }) => {
     setIsLoading(false);
   };
 
+  const handleRemoveUser = async (email: string) => {
+    const updatedEmails = emails.filter((item) => item !== email);
+
+    const success = await updateFileUsers({
+      fileId: file.$id,
+      emails: updatedEmails,
+      path: pathname,
+    });
+
+    if (success) setEmails(updatedEmails);
+
+    closeAllModals();
+  };
+
   const renderDialogContent = () => {
     if (!action) return null;
 
-    const { icon, label, value } = action;
+    const { label, value } = action;
+    const isFileOnwer = currentUser.$id === file.owner.$id;
 
     return (
       <DialogContent className="shad-dialog button">
@@ -94,6 +122,14 @@ export const ActionDropdown = ({ file }: { file: Models.Document }) => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+            />
+          )}
+          {value === "share" && (
+            <ShareInput
+              file={file}
+              onInputChange={setEmails}
+              onRemove={handleRemoveUser}
+              isFileOwner={isFileOnwer}
             />
           )}
           {value === "details" && <FileDetails file={file} />}

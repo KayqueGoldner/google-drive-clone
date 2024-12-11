@@ -1,11 +1,17 @@
 import { Models } from "node-appwrite";
+import { redirect } from "next/navigation";
 
 import { Sort } from "@/components/sort";
 import { getFiles } from "@/lib/actions/file.actions";
 import { SearchParamProps } from "@/types";
 import { Card } from "@/components/card";
+import { getCurrentUser } from "@/lib/actions/user.actions";
 
 const Page = async ({ params }: SearchParamProps) => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) return redirect("/sign-in");
+
   const type = ((await params)?.type as string) || "";
 
   const files = await getFiles();
@@ -30,7 +36,7 @@ const Page = async ({ params }: SearchParamProps) => {
       {files.total > 0 ? (
         <section className="file-list">
           {files.documents.map((file: Models.Document) => (
-            <Card key={file.$id} file={file} />
+            <Card key={file.$id} file={file} currentUser={currentUser} />
           ))}
         </section>
       ) : (

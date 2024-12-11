@@ -6,7 +6,14 @@ import { convertFileSize } from "@/lib/utils";
 import { FormattedDateTime } from "@/components/formattedDateTime";
 import { ActionDropdown } from "@/components/action-dropdown";
 
-export const Card = ({ file }: { file: Models.Document }) => {
+export const Card = ({
+  file,
+  currentUser,
+}: {
+  file: Models.Document;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentUser: any;
+}) => {
   return (
     <Link href={file.url} target="_blank" className="file-card">
       <div className="flex justify-between">
@@ -19,7 +26,7 @@ export const Card = ({ file }: { file: Models.Document }) => {
         />
 
         <div className="flex flex-col items-end justify-between">
-          <ActionDropdown file={file} />
+          <ActionDropdown file={file} currentUser={currentUser} />
           <p className="body-1">{convertFileSize(file.size)}</p>
         </div>
       </div>
