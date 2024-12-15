@@ -3,18 +3,23 @@ import { redirect } from "next/navigation";
 
 import { Sort } from "@/components/sort";
 import { getFiles } from "@/lib/actions/file.actions";
-import { SearchParamProps } from "@/types";
+import { FileType, SearchParamProps } from "@/types";
 import { Card } from "@/components/card";
 import { getCurrentUser } from "@/lib/actions/user.actions";
+import { getFileTypesParams } from "@/lib/utils";
 
-const Page = async ({ params }: SearchParamProps) => {
+const Page = async ({ searchParams, params }: SearchParamProps) => {
   const currentUser = await getCurrentUser();
+  const searchText = ((await searchParams)?.query as string) || "";
+  const sort = ((await searchParams)?.sort as string) || "";
 
   if (!currentUser) return redirect("/sign-in");
 
   const type = ((await params)?.type as string) || "";
 
-  const files = await getFiles();
+  const types = getFileTypesParams(type) as FileType[];
+
+  const files = await getFiles({ types, searchText, sort });
 
   return (
     <div className="page-container">
